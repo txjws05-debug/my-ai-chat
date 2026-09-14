@@ -73,6 +73,11 @@ def delete_session_api(session_id:str)->ApiResponse:
     logging.info("删除指定会话")
     delete_session(session_id)
     return   ApiResponse(code=200,message="删除会话信息成功",data=None)
+#把router注册到FastAPI应用上
+app.include_router(router)
 
+if __name__=="__main__":
+    import uvicorn
+    uvicorn.run(app,host="0.0.0.0",port=8000)
 
 
