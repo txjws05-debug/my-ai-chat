@@ -36,7 +36,7 @@ def build_knowledge_vector_db(embeddings):
     logging.info(f"知识向量库构建完成")
     return vector_db
 #非首次运行直接加载Milvus里面已经存在的知识库集合
-def load_knowledge_vector_db(embeddings)
+def load_knowledge_vector_db(embeddings):
     vector_db=Milvus(
         embedding_function=embeddings,
         connection_args={"uri":MIlLVUS_URI},
