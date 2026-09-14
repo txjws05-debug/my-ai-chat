@@ -10,7 +10,7 @@ from vector_store import init_vector_db
 from config import DASHSCOPE_API_KEY,CHAT_MODEL
 #创建完整的RAG对话链
 #初始化qwen-plus模型
-def  creat_chat_chain():
+def creat_chat_chain():
     llm=ChatTongyi(
         model=CHAT_MODEL,
         dashscope_api_key=DASHSCOPE_API_KEY,
