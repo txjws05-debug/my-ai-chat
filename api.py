@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from typing import Any
 
 # 导入对话链和会话操作函数
-from chat_chain import creat_chat_chain
-from session_store import create_session, load_session, save_session,list_session, delete_session
+from chat_chain import create_chat_chain
+from session_store import create_session, load_session, save_session,list_sessions, delete_session
 
 # 开启日志
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +31,7 @@ chain = None
 @app.on_event("startup")
 def startup():
     global chain
-    chain = creat_chat_chain()
+    chain = create_chat_chain()
     logging.info("服务启动完成，访问 http://localhost:5173 即可聊天")
 
 # 新建会话
@@ -60,7 +60,7 @@ def chat(request: ChatRequest) -> ApiResponse:
 @router.get("/api/sessions")
 def get_sessions_list() -> ApiResponse:
     logging.info("获取会话列表")
-    return ApiResponse(code=200, message="获取会话列表成功", data=list_session())
+    return ApiResponse(code=200, message="获取会话列表成功", data=list_sessions())
 
 # 获取指定会话详情
 @router.get("/api/sessions/{session_id}")
