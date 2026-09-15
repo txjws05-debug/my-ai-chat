@@ -1,0 +1,54 @@
+services:
+  # ---------- 基础设施 ----------
+  redis:
+    image: redis:7-alpine
+    container_name: my-ai-chat-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  milvus:
+    image: milvusdb/milvus:v2.4.17
+    container_name: my-ai-chat-milvus
+    ports:
+      - "19530:19530"   # 向量库 gRPC
+      - "9091:9091"     # 健康检查 / 监控
+    environment:
+      ETCD_USE_EMBED: "true"              # 内嵌 etcd，免装额外组件
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      COMMON_STORAGETYPE_LOCAL: "true"    # 本地存储
+    volumes:
+      - milvus_data:/var/lib/milvus
+    restart: unless-stopped
+
+  # ---------- 后端 ----------
+  backend:
+    build: .
+    container_name: my-ai-chat-backend
+    ports:
+      - "8000:8000"
+    environment:
+      aliyun: ${aliyun:?请先设置 aliyun 环境变量}
+      MILVUS_URI: http://milvus:19530
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      - redis
+      - milvus
+    restart: unless-stopped
+
+  # ---------- 前端（Nginx 托管构建产物 + 反代接口） ----------
+  frontend:
+    build: ./frontend
+    container_name: my-ai-chat-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  milvus_data:

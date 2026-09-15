@@ -9,8 +9,8 @@ DASHSCOPE_API_KEY =os.getenv("aliyun")
 CHAT_MODEL = "qwen-plus"
 EMBEDDING_MODEL = "text-embedding-v3"
 
-# Milvus向量数据库连接配置
-MILVUS_URI = "http://127.0.0.1:19530"
+# Milvus向量数据库连接配置（Docker容器内通过环境变量覆盖为 http://milvus:19530）
+MILVUS_URI = os.getenv("MILVUS_URI", "http://127.0.0.1:19530")
 DOC_COLLECTION_NAME = "knowledge_docs"
 
 # 文档处理配置

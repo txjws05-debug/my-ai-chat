@@ -2,14 +2,17 @@
 会话存储模块
 所有会话元数据和聊天记录都持久化存储到Redis
 """
+import os
 import json
 import time
 from datetime import datetime
 from typing import Dict, List
 import redis
 
-# 连接本地Redis，decode_responses=True表示返回字符串无需手动转码
-r = redis.Redis(host="127.0.0.1", port=6379, db=0, decode_responses=True)
+# 连接Redis（Docker容器内通过环境变量指向 redis 服务），decode_responses=True表示返回字符串无需手动转码
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
 
 # Redis Key前缀
 SESSION_PREFIX = "chat:session:"
