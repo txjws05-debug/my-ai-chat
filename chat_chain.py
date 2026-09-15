@@ -17,7 +17,8 @@ def create_chat_chain():
     llm = ChatTongyi(
         model=CHAT_MODEL,
         dashscope_api_key=DASHSCOPE_API_KEY,
-        temperature=0.1
+        temperature=0.1,
+        streaming = True
     )
 
     # 初始化Milvus知识库检索器，返回最相关的4个文本块

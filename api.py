@@ -2,11 +2,14 @@ import logging
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from typing import Any
+import json
+
+from sympy import false
 
 # 导入对话链和会话操作函数
 from chat_chain import create_chat_chain
 from session_store import create_session, load_session, save_session,list_sessions, delete_session
-
+from fastapi.responses import StreamingResponse
 # 开启日志
 logging.basicConfig(level=logging.INFO)
 
@@ -43,18 +46,25 @@ def create_session_api() -> ApiResponse:
 
 # 核心聊天接口
 @router.post("/api/chat")
-def chat(request: ChatRequest) -> ApiResponse:
-    logging.info(f"与AI交互：{request.session_id}:{request.message}")
-    session_data = load_session(request.session_id)
-    response = chain.invoke(
-        {"input": request.message},
-        config={"configurable": {"session_id": request.session_id}}
-    )
-    ai_response = response.content
-    session_data["messages"].append({"role": "user", "content": request.message})
-    session_data["messages"].append({"role": "assistant", "content": ai_response})
-    save_session(request.session_id, session_data)
-    return ApiResponse(code=200, message="获取AI回复成功", data=ai_response)
+async def chat(request: ChatRequest) -> ApiResponse:
+    print(f"与AI交互 流式输出：\n\n")
+    session_data=load_session(request.session_id)
+    async def generate():
+        full_text=""
+        async for chunk in chain.astream(
+                {"input":request.message},
+                config={"configurable":{"session_id":request.session_id}}
+        ):
+            piece=chunk.content
+            full_text+=piece
+            yield f"data:{json.dumps({'content':piece},ensure_ascii=False)}\n\n"
+            #流结束，回答攒齐了再存历史
+        session_data["messages"].append({"role":"user","content":request.message})
+        session_data["messages"].append({"role":"assistant","content":full_text})
+        yield "data:[DONE]\n\n"
+        save_session(request.session_id,session_data)
+    return StreamingResponse(generate(),media_type="text/event-stream")
+
 
 # 获取会话列表
 @router.get("/api/sessions")
